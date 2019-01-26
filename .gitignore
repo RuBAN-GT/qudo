@@ -1,0 +1,23 @@
+# Common
+/.bundle/
+/.yardoc
+/_yardoc/
+/coverage/
+/doc/
+/pkg/
+/tmp/
+
+# Environment
+.tool-versions
+
+# Gem
+*.gem
+Gemfile.lock
+
+# Rspec
+/spec/reports/
+.rspec_status
+
+# Editors
+.idea
+.vscode

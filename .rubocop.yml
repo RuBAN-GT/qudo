@@ -1,0 +1,20 @@
+AllCops:
+  TargetRubyVersion: 2.5.3
+
+Layout/IndentationConsistency:
+  Enabled: true
+  EnforcedStyle: rails
+
+Metrics/LineLength:
+  Max: 120
+
+Style/ClassAndModuleChildren:
+  Enabled: false
+  EnforcedStyle: compact
+
+Style/DoubleNegation:
+  Enabled: false
+
+Style/StringLiterals:
+  Enabled: true
+  EnforcedStyle: single_quotes
