@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 
-require_relative 'object_factory'
-require_relative 'types'
-require_relative 'utils/config_builder'
+require 'qudo/object_factory'
+require 'qudo/types'
+require 'qudo/utils/config_builder'
 
 module Qudo
   # Basic class for components

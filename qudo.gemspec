@@ -26,8 +26,10 @@ Gem::Specification.new do |spec|
   # Main dependencies
   spec.add_runtime_dependency 'chamber', '2.12'
   spec.add_runtime_dependency 'dry-configurable'
+  spec.add_runtime_dependency 'dry-inflector'
   spec.add_runtime_dependency 'dry-struct'
   spec.add_runtime_dependency 'dry-types'
+  spec.add_runtime_dependency 'hashie'
   spec.add_runtime_dependency 'hooks'
 
   spec.add_development_dependency 'bundler', '>= 1.17'
