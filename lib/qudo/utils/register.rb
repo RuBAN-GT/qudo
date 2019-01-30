@@ -6,6 +6,9 @@ module Qudo
   module Utils
     # The key-value register for any items
     class Register
+      alias set register
+      alias set! register!
+
       # Store with items
       #
       # @return [Hashie::Mash]
@@ -27,7 +30,7 @@ module Qudo
       # @return [*]
       # @raise  [StandardError] if key doesn't exists in store
       def get!(name)
-        raise "The item #{name} doesn't exist in store" unless exists? name
+        raise "#{name} doesn't exists in the store" unless exists? name
 
         get name
       end

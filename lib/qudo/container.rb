@@ -5,9 +5,6 @@ require 'qudo/utils/component_register'
 
 module Qudo
   # The wrapper for working with components
-  class Container
-    def components
-      @components = Utils::ComponentRegister.new
-    end
+  class Container < Utils::ComponentRegister
   end
 end
