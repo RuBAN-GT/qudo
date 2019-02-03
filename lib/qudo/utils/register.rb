@@ -6,9 +6,6 @@ module Qudo
   module Utils
     # The key-value register for any items
     class Register
-      alias set register
-      alias set! register!
-
       # Store with items
       #
       # @return [Hashie::Mash]
@@ -48,7 +45,7 @@ module Qudo
       # @param  [String,Symbol] name
       # @param  [*] name
       # @return [*]
-      def register(name, item)
+      def set(name, item)
         casted_name = cast_name name
         manual_register casted_name, item if validate_registration(casted_name, item)
       end
@@ -59,7 +56,7 @@ module Qudo
       # @param  [*] name
       # @return [*]
       # @raise  [ArgumentError] on invalid result of validation
-      def register!(name, item)
+      def set!(name, item)
         casted_name = cast_name name
         validate_registration! casted_name, item
         manual_register casted_name, item

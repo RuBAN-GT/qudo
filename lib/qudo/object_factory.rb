@@ -55,7 +55,7 @@ module Qudo
     # Get target with building if it needed
     #
     # @return [*] from builder
-    def call
+    def resolve
       built? ? target : build
     end
 
