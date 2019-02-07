@@ -16,7 +16,7 @@ module Qudo
     # @param options [Hash]
     def initialize(options = {})
       @config       = self.class.build_config options
-      @dependencies = options.fetch :dependencies, []
+      @dependencies = options.fetch :dependencies, {}
     end
 
     def build_args
