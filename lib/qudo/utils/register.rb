@@ -47,7 +47,7 @@ module Qudo
       # @return [*]
       def set(name, item)
         casted_name = cast_name name
-        manual_register casted_name, item if validate_registration(casted_name, item)
+        manual_set casted_name, item if validate_item(casted_name, item)
       end
 
       # Strong setting of value by key in store
@@ -58,8 +58,8 @@ module Qudo
       # @raise  [ArgumentError] on invalid result of validation
       def set!(name, item)
         casted_name = cast_name name
-        validate_registration! casted_name, item
-        manual_register casted_name, item
+        validate_item! casted_name, item
+        manual_set casted_name, item
       end
 
       # Remove item from store
@@ -78,22 +78,26 @@ module Qudo
         store.key? name.to_sym
       end
 
+      def compatible?(_item)
+        true
+      end
+
+      def validate_item(_name, _item)
+        compatible?
+      end
+
       private
 
         def cast_name(name)
           name.to_sym
         end
 
-        def manual_register(name, item)
+        def manual_set(name, item)
           store[name.to_sym] = item
         end
 
-        def validate_registration(_name, _item)
-          true
-        end
-
-        def validate_registration!(name, item)
-          raise ArgumentError, "Can't add #{name} in store" unless validate_registration(name, item)
+        def validate_item!(name, item)
+          raise ArgumentError, "Item #{name} is incorrect for the store" unless validate_item(name, item)
         end
     end
   end

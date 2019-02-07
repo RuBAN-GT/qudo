@@ -15,14 +15,14 @@ module Qudo
         @inflector ||= Dry::Inflector.new
       end
 
+      def compatible?(component)
+        component.is_a? Qudo::Component
+      end
+
       private
 
         def cast_name(name)
           self.class.inflector.foreign_key name.to_s.gsub(%r{/[\/:]+/}, '_')
-        end
-
-        def validate_registration(_name, component)
-          component.is_a? Qudo::Component
         end
     end
   end
