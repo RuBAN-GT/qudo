@@ -1,9 +1,9 @@
 # frozen_string_literal: true
 
-require_relative './dependence_resolver'
+require_relative './dependencies_resolver'
 
 module Qudo
-  module Utils
+  module Dependencies
     # Extendable module for dependencies declaration and building
     module DependenciesBuilder
       # Dependencies declaration
@@ -21,7 +21,7 @@ module Qudo
       # @param  [Hash, Register] manager
       # @return [Hashie::Mash]
       def build_dependencies(manager)
-        DependenceResolver.resolve manager, dependencies
+        Resolver.resolve manager, dependencies
       end
     end
   end

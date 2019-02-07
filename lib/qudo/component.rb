@@ -1,15 +1,15 @@
 # frozen_string_literal: true
 
+require 'qudo/dependencies/dependencies_builder'
 require 'qudo/object_factory'
 require 'qudo/types'
 require 'qudo/utils/config_builder'
-require 'qudo/utils/dependencies_builder'
 
 module Qudo
   # Basic class for components
   class Component < ObjectFactory
+    extend Dependencies::DependenciesBuilder
     extend Utils::ConfigBuilder
-    extend Utils::DependenciesBuilder
 
     attr_reader :config, :dependencies
 
