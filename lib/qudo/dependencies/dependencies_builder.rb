@@ -6,22 +6,62 @@ module Qudo
   module Dependencies
     # Extendable module for dependencies declaration and building
     module DependenciesBuilder
-      # Dependencies declaration
+      # Methods for defining and building dependencies
+      module BuilderModule
+        # Dependencies declaration
+        #
+        # @param  [Array<String,Symbol>] dependencies
+        # @return [Array<String,Symbol>]
+        def dependencies(dependencies = [])
+          return @dependencies unless dependencies.nil?
+
+          @dependencies = dependencies
+        end
+
+        # Build dependencies from injectable argument
+        #
+        # @param  [Hash, Register] manager
+        # @return [Hashie::Mash]
+        def build_dependencies(manager)
+          Resolver.resolve manager, dependencies
+        end
+      end
+
+      def self.included(base)
+        base.extend(BuilderModule)
+      end
+
+      attr_reader :resolved_dependencies
+
+      def dependencies
+        @dependencies ||= {}
+      end
+
+      # Override dependencies for a object
       #
-      # @param  [Array<String,Symbol>] dependencies
-      # @return [Array<String,Symbol>]
-      def dependencies(dependencies = [])
-        return @dependencies unless dependencies.nil?
+      # @param  [Hash, Register] dependencies
+      # @return [Hash, Register]
+      # @raise  [ArgumentError] when a object has resolved dependencies
+      def inject_dependencies(dependencies)
+        raise ArgumentError, "Can't inject for resolved dependenices" if dependencies_resolved?
 
         @dependencies = dependencies
       end
 
-      # Build dependencies from injectable argument
+      # Resolve dependencies
       #
-      # @param  [Hash, Register] manager
       # @return [Hashie::Mash]
-      def build_dependencies(manager)
-        Resolver.resolve manager, dependencies
+      def resolve_dependencies
+        raise StandardError, 'Dependencies already resolved' if dependencies_resolved?
+
+        @resolved_dependencies = self.class.build_dependencies(dependencies)
+      end
+
+      # The state of dependencies
+      #
+      # @return [Boolean]
+      def dependencies_resolved?
+        !@resolved_dependencies.nil?
       end
     end
   end
