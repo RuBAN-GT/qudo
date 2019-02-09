@@ -4,49 +4,53 @@ require 'hashie'
 
 module Qudo
   module Dependencies
-    # Special resolver of different sources
+    # Special resolver for different sources
     module DependenciesResolver
       class << self
+        # Load required dependencies from selected register
+        #
+        # @param  [Hash] dependencies
+        # @param  [Array<String,Symbol>] requirements
+        # @return [Hashie::Mash]
+        def retrieve(dependencies, requirements = [])
+          requirements.each_with_object(Hashie::Mash.new) do |requirement, total|
+            total[requirement] = retrieve_dependency(dependencies, requirement)
+          end.freeze
+        end
+
+        # Retrieve dependency from manager
+        #
+        # @param  [Hash]          dependencies
+        # @param  [String,Symbol] key
+        # @return [*]
+        def retrieve_dependency(dependencies, key)
+          raise ArgumentError, "dependency #{key} is not found" unless dependencies.key?(key)
+
+          dependencies[key]
+        end
+
         # Resolve required dependencies from register
         #
-        # @param  [Register, Hashie::Mash] dependencies
+        # @param  [Hashie::Mash] dependencies
         # @param  [Array<String,Symbol>] requirements
         # @return [Hashie::Mash]
         def resolve(dependencies, requirements = [])
           retrieved = retrieve(dependencies, requirements)
           retrieved.each_with_object(Hashie::Mash.new) do |(k, v), total|
-            total[k] = resolve_dependence v
+            total[k] = resolve_dependency v
           end.freeze
         end
 
-        # Load required dependencies from selected register
+        # Resolve dependency
         #
-        # @param  [Register, Hashie::Mash] dependencies
-        # @param  [Array<String,Symbol>] requirements
-        # @return [Hashie::Mash]
-        def retrieve(dependencies, requirements = [])
-          requirements.each_with_object(Hashie::Mash.new) do |requirement, total|
-            total[requirement.to_sym] = retrieve_dependency(dependencies, requirement)
-          end.freeze
+        # @param  [Qudo::Component] dependency
+        # @return [*]
+        def resolve_dependency(dependency)
+          return dependency.resolve if dependency.respond_to? :resolve
+          return dependency.call if dependency.respond_to? :call
+
+          raise ArgumentError, 'Unknown dependency for resolving'
         end
-
-        private
-
-          def resolve_dependence(dependence)
-            return dependence.resolbuild_dependenciesve if dependence.respond_to? :resolve
-            return dependence.call if dependence.respond_to? :call
-
-            raise ArgumentError, 'Unknown dependence for resolving'
-          end
-
-          def retrieve_dependency(dependencies, key)
-            raise ArgumentError, 'Unknown dependencies register' unless dependencies.respond_to? :[]
-            if dependencies.respond_to?(:exists?) && dependencies.exists?(key) || dependencies[key].nil?
-              raise ArgumentError, "Dependence #{key} is not found in dependencies register"
-            end
-
-            dependencies[key]
-          end
       end
     end
   end
