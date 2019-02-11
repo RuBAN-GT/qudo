@@ -31,7 +31,7 @@ module Qudo
       attr_reader :store
 
       def handle_component(component, options = {})
-        component.is_a? Class ? generate_new_component(component, options) : generate_injected_component(component)
+        component.is_a?(Class) ? generate_new_component(component, options) : generate_injected_component(component)
       end
 
       def generate_new_component(component_klass, options = {})

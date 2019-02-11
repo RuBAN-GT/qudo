@@ -32,7 +32,7 @@ RSpec.describe Qudo::ObjectFactory do
       expect(sample_factory_instance.target).to eq(sample_target)
     end
 
-    it 'sets flag built after successfull building' do
+    it 'sets flag built after successful building' do
       sample_factory = full_factory
       sample_factory_instance = sample_factory.new
       sample_factory_instance.build

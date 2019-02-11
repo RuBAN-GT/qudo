@@ -14,7 +14,7 @@ module Qudo
         # @param  [Array<String,Symbol>] dependencies
         # @return [Array<String,Symbol>]
         def dependencies(dependencies = [])
-          return @dependencies unless dependencies.nil?
+          return @dependencies unless @dependencies.nil?
 
           @dependencies = dependencies
         end
@@ -24,7 +24,7 @@ module Qudo
         # @param  [Hash] manager
         # @return [Hashie::Mash]
         def build_dependencies(manager)
-          Resolver.resolve manager, dependencies
+          DependenciesResolver.resolve manager, dependencies
         end
       end
 

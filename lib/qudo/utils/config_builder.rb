@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require 'dry-struct'
+require 'qudo/types'
 
 module Qudo
   module Utils

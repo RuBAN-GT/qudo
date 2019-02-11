@@ -39,4 +39,15 @@ RSpec.describe Qudo::Component do
       expect(object.config.attributes.length).to be(0)
     end
   end
+
+  describe '#build_args' do
+    it 'returns builder arguments with config and resolved dependencies' do
+      sample = component_class.new
+
+      allow(sample).to receive(:config) { :config }
+      allow(sample).to receive(:resolve_dependencies) { :deps }
+
+      expect(sample.build_args).to eq %i[config deps]
+    end
+  end
 end
