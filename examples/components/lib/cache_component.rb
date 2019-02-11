@@ -6,9 +6,9 @@ require 'redis'
 
 class CacheComponent < Qudo::Component
   config do
-    attribute :host, Qudo::Types::Strict::String.default('0.0.0.0')
-    attribute :port, Qudo::Types::Coercible::Integer.default(6379)
-    attribute :db, Qudo::Types::Coercible::Integer.default(0)
+    property :host, required: true, default: '0.0.0.0'
+    property :port, required: true, default: 6379
+    property :db,   required: true, default: 0
   end
 
   builder do |config|

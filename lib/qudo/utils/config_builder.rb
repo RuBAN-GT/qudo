@@ -1,11 +1,10 @@
 # frozen_string_literal: true
 
-require 'dry-struct'
-require 'qudo/types'
+require 'hashie'
 
 module Qudo
   module Utils
-    # Simple config generator over dry-struct
+    # A config generator over Hashie::Dash
     module ConfigBuilder
       # The config structure and schema validator
       #
@@ -14,14 +13,14 @@ module Qudo
       #     extend Qudo::Utils::ConfigBuilder
       #
       #     config do
-      #       attribute :host, Types::Strict::String.default('0.0.0.0')
-      #       attribute :port, Types::Coercible::Integer.default(6379)
+      #       property :host, required: true, default: '0.0.0.0'
+      #       property :port, required: true, default: 3000
       #     end
       #   end
       #
-      # @param  [Class<Dry::Struct>, nil] configuration with existed class with structure
+      # @param  [Class<Hashie::Dash>, nil] configuration with existed class with structure
       # @param  [Proc] &block with body of structure
-      # @return [Class<Dry::Struct>]
+      # @return [Class<Hashie::Dash>]
       def config(configuration = nil, &block)
         return @config unless @config.nil?
         return @config = configuration unless configuration.nil?
@@ -30,13 +29,15 @@ module Qudo
       end
 
       # The default configuration class without any scheme
-      # @return [Class<Dry::Struct>]
+      # @return [Class<Hashie::Dash>]
       def default_config(&block)
-        Class.new Dry::Struct, &block
+        Class.new(Hashie::Dash, &block).class_eval do
+          include Hashie::Extensions::IgnoreUndeclared
+        end
       end
 
       # Build config instance
-      # @param [Dry::Struct, Hash]
+      # @param [Hashie::Dash, Hash]
       def build_config(options = {})
         config_class = config.nil? ? default_config : config
         config_class.new options
