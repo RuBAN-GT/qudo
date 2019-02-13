@@ -7,5 +7,5 @@ require 'qudo'
 require 'qudo/utils'
 
 Bundler.require(:default, :development)
-Qudo::Utils.recursive_require Pathname.pwd.join('..', 'lib', 'qudo')
+Qudo::Utils.recursive_require Pathname.new(__dir__).join('..', 'lib', 'qudo')
 Pry.start
