@@ -32,7 +32,7 @@ RSpec.describe Qudo::ObjectFactory do
       expect(sample_factory_instance.target).to eq(sample_target)
     end
 
-    it 'sets flag built after successfull building' do
+    it 'sets flag built after successful building' do
       sample_factory = full_factory
       sample_factory_instance = sample_factory.new
       sample_factory_instance.build
@@ -102,13 +102,13 @@ RSpec.describe Qudo::ObjectFactory do
     end
   end
 
-  describe '#call' do
+  describe '#resolve' do
     it 'creates new target if it is not built yet' do
       sample_factory = full_factory
       sample_factory_instance = sample_factory.new
 
       allow(sample_factory_instance).to receive(:build)
-      expect { sample_factory_instance.call }.not_to raise_error
+      expect { sample_factory_instance.resolve }.not_to raise_error
       expect(sample_factory_instance).to have_received(:build)
     end
 
@@ -118,7 +118,7 @@ RSpec.describe Qudo::ObjectFactory do
       sample_factory_instance.build
 
       allow(sample_factory_instance).to receive_messages(build: nil, target: nil)
-      expect { sample_factory_instance.call }.not_to raise_error
+      expect { sample_factory_instance.resolve }.not_to raise_error
 
       expect(sample_factory_instance).not_to have_received(:build)
       expect(sample_factory_instance).to have_received(:target)

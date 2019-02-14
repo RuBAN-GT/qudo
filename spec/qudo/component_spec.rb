@@ -3,21 +3,19 @@
 require 'qudo/component'
 
 RSpec.describe Qudo::Component do
-  def component_class
+  subject do
     Class.new(described_class) { builder { [Faker::Number.number] } }
   end
 
   def component_config
     proc do
-      attribute :username, Qudo::Types::Strict::String.default('admin')
-      attribute :password, Qudo::Types::Strict::String
+      property :username, required: true, default: 'admin'
+      property :password, required: true
     end
   end
 
   def component_with_config
-    component_class.tap do |comp|
-      comp.config(&component_config)
-    end
+    subject.tap { |comp| comp.config(&component_config) }
   end
 
   describe '.new' do
@@ -31,12 +29,22 @@ RSpec.describe Qudo::Component do
     end
 
     it 'creates component instance with default config object on undefined config' do
-      sample = component_class
       object = double
 
-      expect { object = sample.new(password: Faker::Internet.password) }.not_to raise_error
-      expect(object.config.class.superclass).to be(sample.default_config.superclass)
-      expect(object.config.attributes.length).to be(0)
+      expect { object = subject.new(password: Faker::Internet.password) }.not_to raise_error
+      expect(object.config.class.superclass).to be(subject.default_config.superclass)
+      expect(object.config.values.length).to be(0)
+    end
+  end
+
+  describe '#build_args' do
+    it 'returns builder arguments with config and resolved dependencies' do
+      sample = subject.new
+
+      allow(sample).to receive(:config) { :config }
+      allow(sample).to receive(:resolve_dependencies) { :deps }
+
+      expect(sample.build_args).to eq %i[config deps]
     end
   end
 end
