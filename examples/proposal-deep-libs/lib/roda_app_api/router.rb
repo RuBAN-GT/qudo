@@ -12,7 +12,7 @@ module RodaAppApi
       r.root { 'Hello world!' }
 
       r.get 'films' do
-        JSON.parse Application.container[:client].resolve['/films'].get
+        JSON.parse Application.container[:client]['/films'].get
       end
     end
   end

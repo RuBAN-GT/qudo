@@ -14,17 +14,45 @@ module Qudo
       @store.dup
     end
 
+    # Save some component in the container store
+    #
+    # @param  [String,Symbol] name
+    # @return [Qudo::Component]
     def register(name, *args)
       store[name] = handle_component(*args)
     end
+    alias []= register
 
+    # Get component instance from store
+    #
+    # @param  [String,Symbol] name
+    # @return [Component,nil]
     def retrieve(name)
       store[name]
     end
 
-    def [](name)
+    def retrieve!(name)
+      raise KeyError, "Undefined component #{name}" unless store.key? name
+
       retrieve name
     end
+
+    # Get component resolved target from store
+    #
+    # @param  [String,Symbol] name
+    # @return [*,nil]
+    def resolve(name)
+      return nil unless store.key? name
+
+      retrieve(name).resolve
+    end
+
+    def resolve!(name)
+      raise KeyError, "Undefined component #{name}" unless store.key? name
+
+      resolve name
+    end
+    alias [] resolve!
 
     private
 

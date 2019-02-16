@@ -79,4 +79,42 @@ RSpec.describe Qudo::Container do
       expect(subject.components).not_to be original_store
     end
   end
+
+  describe '#retrieve' do
+    it 'returns component by key of store' do
+      some_key = Faker::Lorem.word
+      subject.register some_key, input_instance
+
+      expect(subject.retrieve(some_key)).to be input_instance
+    end
+
+    it 'returns nil for undefined component' do
+      expect(subject.retrieve(Faker::Lorem.word)).to be_nil
+    end
+  end
+
+  describe '#retrieve!' do
+    it 'raises KeyError for undefined component' do
+      expect { subject.retrieve! Faker::Lorem.word }.to raise_error KeyError
+    end
+  end
+
+  describe '#resolve' do
+    it 'returns resolved target for existed component' do
+      expect(input_instance).to receive(:resolve)
+
+      subject.register :comp, input_instance
+      subject.resolve :comp
+    end
+
+    it 'returns nil for undefined component' do
+      expect(subject.resolve(Faker::Lorem.word)).to be_nil
+    end
+  end
+
+  describe '#resolve!' do
+    it 'raises KeyError for undefined component' do
+      expect { subject.resolve! Faker::Lorem.word }.to raise_error KeyError
+    end
+  end
 end
