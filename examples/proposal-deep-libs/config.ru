@@ -3,6 +3,6 @@
 require 'bundler/setup'
 
 require_relative 'lib/roda_app_api/application'
-require_relative 'lib/roda_app_api/router'
 
+RodaAppApi::Application.boot
 run RodaAppApi::Router.freeze.app

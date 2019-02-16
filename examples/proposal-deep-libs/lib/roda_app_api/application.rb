@@ -6,6 +6,8 @@ require_relative 'components/client'
 
 module RodaAppApi
   class Application < Qudo::Application
+    path Pathname.new(__dir__)
+
     config.resource = 'https://ghibliapi.herokuapp.com'
 
     containers.default = Qudo::Container.new

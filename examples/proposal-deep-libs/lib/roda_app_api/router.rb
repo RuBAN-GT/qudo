@@ -2,7 +2,6 @@
 
 require 'json'
 require 'roda'
-require_relative './application'
 
 module RodaAppApi
   # @see https://roda.jeremyevans.net/
