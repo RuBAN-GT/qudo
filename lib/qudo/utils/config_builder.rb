@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require 'hashie'
+require_relative './config'
 
 module Qudo
   module Utils
@@ -31,16 +31,14 @@ module Qudo
       # The default configuration class without any scheme
       # @return [Class<Hashie::Dash>]
       def default_config(&block)
-        Class.new(Hashie::Dash, &block).class_eval do
-          include Hashie::Extensions::IgnoreUndeclared
-        end
+        Class.new(Config, &block)
       end
 
       # Build config instance
       # @param [Hashie::Dash, Hash]
       def build_config(options = {})
         config_class = config.nil? ? default_config : config
-        config_class.new options
+        config_class.new(options).freeze
       end
     end
   end

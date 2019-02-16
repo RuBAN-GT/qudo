@@ -7,7 +7,7 @@ module RodaAppApi
     # Simple HTTP client for selected resource
     class Client < Qudo::Component
       config do
-        property 'resource', required: true
+        property :resource, required: true
       end
 
       builder do |config|
