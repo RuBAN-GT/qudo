@@ -23,3 +23,7 @@ group :development do
   gem 'pry-byebug', '~> 3.6'
   gem 'rerun', '~> 0.13'
 end
+
+group :test do
+  gem 'simplecov'
+end
