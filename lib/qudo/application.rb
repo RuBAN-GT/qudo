@@ -1,11 +1,14 @@
 # frozen_string_literal: true
 
+require 'qudo/container'
 require 'qudo/utils'
 require 'qudo/utils/persistent_store'
 
 module Qudo
   # A representation of a application with containers and unique config
   class Application
+    DEFAULT_CONTAINER = :master
+
     class << self
       def booted?
         @booted ||= false
@@ -16,11 +19,13 @@ module Qudo
       end
 
       def container
-        containers[:default]
+        containers[DEFAULT_CONTAINER]
       end
 
       def containers
-        @containers ||= Utils::PersistentStore.new
+        @containers ||= Utils::PersistentStore.new.tap do |container_store|
+          container_store[DEFAULT_CONTAINER] = build_default_container
+        end
       end
 
       def path(real_path = nil)
@@ -40,6 +45,10 @@ module Qudo
       end
 
       private
+
+        def build_default_container
+          Container.new
+        end
 
         def boot_workflow
           require_internals
