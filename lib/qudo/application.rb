@@ -7,6 +7,10 @@ module Qudo
   # A representation of a application with containers and unique config
   class Application
     class << self
+      def booted?
+        @booted ||= false
+      end
+
       def config
         @config ||= Utils::PersistentStore.new
       end
@@ -26,15 +30,30 @@ module Qudo
       end
 
       def boot
-        require_internals
+        boot_workflow unless booted?
+      end
+
+      def boot!
+        raise LoadError, 'Application is already booted' if booted?
+
+        boot_workflow
       end
 
       private
+
+        def boot_workflow
+          require_internals
+          finalize_booting
+        end
 
         def require_internals
           raise LoadError, 'Application has undefined #path' if path.nil?
 
           Utils.recursive_require path
+        end
+
+        def finalize_booting
+          @booted = true
         end
     end
   end

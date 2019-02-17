@@ -66,6 +66,12 @@ RSpec.describe Qudo::Application do
         end
       end
 
+      it 'changes boot status after successfully booting' do
+        expect(subject.booted?).to be_falsey
+        subject.boot
+        expect(subject.booted?).to be_truthy
+      end
+
       it 'requires internal rb files of application' do
         expect(Qudo::Utils).to receive(:recursive_require) do |dir, mask|
           expect(dir.to_s).to eq application_path
@@ -73,6 +79,22 @@ RSpec.describe Qudo::Application do
         end
         expect { subject.boot }.not_to raise_error
       end
+
+      it 'returns nil for already loaded application' do
+        subject.boot
+        expect(subject.boot).to be_nil
+      end
+    end
+  end
+
+  describe '.boot!' do
+    subject do
+      Class.new(described_class) { path __dir__ }
+    end
+
+    it 'raises LoadError for already loaded application' do
+      subject.boot!
+      expect { subject.boot! }.to raise_error LoadError
     end
   end
 end
