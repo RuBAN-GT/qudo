@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 require 'qudo/utils/config'
-require 'hashie'
+require 'qudo/utils/store'
 
 RSpec.describe Qudo::Utils::Config do
   subject do
@@ -20,15 +20,15 @@ RSpec.describe Qudo::Utils::Config do
       expect(sample.prop).to be value
     end
 
-    it 'supports Mash instances in initialization' do
+    it 'supports Store instances in initialization' do
       value  = Faker::RickAndMorty.character
       sample = nil
 
-      init_cfg = Hashie::Mash.new prop: value
+      init_cfg = Qudo::Utils::Store.new prop: value
       expect { sample = subject.new init_cfg }.not_to raise_error
       expect(sample.prop).to be value
 
-      mutated_cfg = Hashie::Mash.new
+      mutated_cfg = Qudo::Utils::Store.new
       mutated_cfg.prop = value
 
       expect { sample = subject.new mutated_cfg }.not_to raise_error

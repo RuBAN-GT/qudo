@@ -6,8 +6,12 @@ require 'qudo/utils/persistent_store'
 module Qudo
   # The simple register over components
   class Container
+    def self.build_container_store(*args)
+      Utils::PersistentStore.new(*args)
+    end
+
     def initialize
-      @store = Utils::PersistentStore.new
+      @store = self.class.build_container_store
     end
 
     def components

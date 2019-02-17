@@ -8,9 +8,9 @@ RSpec.describe Qudo::Component do
   end
 
   def component_config
-    proc do
-      property :username, required: true, default: 'admin'
-      property :password, required: true
+    proc do |s|
+      s.property :username, required: true, default: 'admin'
+      s.property :password, required: true
     end
   end
 

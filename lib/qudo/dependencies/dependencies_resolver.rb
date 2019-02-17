@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require 'hashie'
+require 'qudo/utils/store'
 
 module Qudo
   module Dependencies
@@ -11,9 +11,9 @@ module Qudo
         #
         # @param  [Hash] dependencies
         # @param  [Array<String,Symbol>] requirements
-        # @return [Hashie::Mash]
+        # @return [Qudo::Utils::Store]
         def retrieve(dependencies, requirements = [])
-          requirements.each_with_object(Hashie::Mash.new) do |requirement, total|
+          requirements.each_with_object(Utils::Store.new) do |requirement, total|
             total[requirement] = retrieve_dependency(dependencies, requirement)
           end.freeze
         end
@@ -33,10 +33,10 @@ module Qudo
         #
         # @param  [Hashie::Mash] dependencies
         # @param  [Array<String,Symbol>] requirements
-        # @return [Hashie::Mash]
+        # @return [Qudo::Utils::Store]
         def resolve(dependencies, requirements = [])
           retrieved = retrieve(dependencies, requirements)
-          retrieved.each_with_object(Hashie::Mash.new) do |(k, v), total|
+          retrieved.each_with_object(Utils::Store.new) do |(k, v), total|
             total[k] = resolve_dependency v
           end.freeze
         end

@@ -12,15 +12,15 @@ module Qudo
       #   class SomeClass
       #     extend Qudo::Utils::ConfigBuilder
       #
-      #     config do
-      #       property :host, required: true, default: '0.0.0.0'
-      #       property :port, required: true, default: 3000
+      #     config do |schema|
+      #       schema.property :host, required: true, default: '0.0.0.0'
+      #       schema.property :port, required: true, default: 3000
       #     end
       #   end
       #
-      # @param  [Class<Hashie::Dash>, nil] configuration with existed class with structure
+      # @param  [Config, nil] configuration with existed class with structure
       # @param  [Proc] &block with body of structure
-      # @return [Class<Hashie::Dash>]
+      # @return [Class<Config>]
       def config(configuration = nil, &block)
         return @config unless @config.nil?
         return @config = configuration unless configuration.nil?
@@ -29,9 +29,9 @@ module Qudo
       end
 
       # The default configuration class without any scheme
-      # @return [Class<Hashie::Dash>]
-      def default_config(&block)
-        Class.new(Config, &block)
+      # @return [Class<Config>]
+      def default_config
+        Class.new(Config).tap { |klass| yield klass if block_given? }
       end
 
       # Build config instance

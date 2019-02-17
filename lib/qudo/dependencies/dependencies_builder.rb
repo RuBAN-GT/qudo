@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require 'hashie'
+require 'qudo/utils/store'
 require_relative './dependencies_resolver'
 
 module Qudo
@@ -26,6 +26,10 @@ module Qudo
         def build_dependencies(manager)
           DependenciesResolver.resolve manager, dependencies
         end
+
+        def build_dependencies_store(*args)
+          Utils::Store.new(*args)
+        end
       end
 
       def self.included(base)
@@ -35,23 +39,23 @@ module Qudo
       attr_reader :resolved_dependencies
 
       def dependencies
-        @dependencies ||= Hashie::Mash.new
+        @dependencies ||= self.class.build_dependencies_store
       end
 
       # Override dependencies for a object
       #
       # @param  [Hash] dependencies
-      # @return [Hashie::Mash]
+      # @return [Utils::Store]
       # @raise  [ArgumentError] when a object has resolved dependencies
       def inject_dependencies(dependencies)
         raise ArgumentError, "Can't inject for resolved dependencies" if dependencies_resolved?
 
-        @dependencies = Hashie::Mash.new dependencies
+        @dependencies = self.class.build_dependencies_store dependencies
       end
 
       # Resolve dependencies
       #
-      # @return [Hashie::Mash]
+      # @return [Utils::Store]
       def resolve_dependencies
         raise StandardError, 'Dependencies already resolved' if dependencies_resolved?
 
