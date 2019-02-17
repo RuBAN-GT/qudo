@@ -9,5 +9,10 @@ module RodaAppApi
 
     config.resource = 'https://ghibliapi.herokuapp.com'
     container.register :client, Components::Client, config
+
+    def self.run
+      boot!
+      Router.freeze.app
+    end
   end
 end

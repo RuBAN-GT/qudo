@@ -28,7 +28,7 @@ module Qudo
         end
 
         def build_dependencies_store(*args)
-          Utils::Store.new(*args)
+          Utils::Store.new(*args).freeze
         end
       end
 
