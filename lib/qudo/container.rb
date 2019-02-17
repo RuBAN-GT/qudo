@@ -1,13 +1,13 @@
 # frozen_string_literal: true
 
-require 'hashie'
 require 'qudo/dependencies/dependencies_builder'
+require 'qudo/utils/persistent_store'
 
 module Qudo
   # The simple register over components
   class Container
     def initialize
-      @store = Hashie::Mash.new
+      @store = Utils::PersistentStore.new
     end
 
     def components

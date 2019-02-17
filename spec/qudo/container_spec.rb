@@ -18,7 +18,7 @@ RSpec.describe Qudo::Container do
     context 'when push component class and options' do
       it 'raises error for class without included DependenciesBuilder' do
         sample_class = Class.new Qudo::ObjectFactory
-        expect { subject.register :key, sample_class }.to raise_error ArgumentError
+        expect { subject.register :some_key, sample_class }.to raise_error ArgumentError
       end
 
       it 'creates class instance from correct input' do
@@ -36,14 +36,14 @@ RSpec.describe Qudo::Container do
           expect(args).to include(dependencies: subject.components)
         end
 
-        subject.register :key, input_class, input_options
+        subject.register :some_key, input_class, input_options
       end
     end
 
     context 'when push component instance' do
       it 'raises error for class instance without DependenciesBuilder' do
         sample_class = Class.new Qudo::ObjectFactory
-        expect { subject.register :key, sample_class.new }.to raise_error ArgumentError
+        expect { subject.register :some_key, sample_class.new }.to raise_error ArgumentError
       end
 
       it 'pushes a original component' do
@@ -58,14 +58,14 @@ RSpec.describe Qudo::Container do
           expect(args).to include(subject.components)
         end
 
-        subject.register :key, input_instance
+        subject.register :some_key, input_instance
       end
 
       it 'doesnt inject dependencies for resolved component' do
         expect(input_instance).not_to receive(:inject_dependencies)
 
         input_instance.resolve
-        subject.register :key, input_instance
+        subject.register :some_key, input_instance
       end
     end
   end

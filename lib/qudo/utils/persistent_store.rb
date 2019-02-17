@@ -6,6 +6,8 @@ module Qudo
   module Utils
     # Hash wrapper that allowing to set values only once
     class PersistentStore < Hashie::Mash
+      include Hashie::Extensions::Mash::SafeAssignment
+
       def regular_writer(key, *args)
         raise ArgumentError, "#{key} already exists" if key? key
 

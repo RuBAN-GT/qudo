@@ -6,26 +6,25 @@ require 'qudo/utils'
 require 'qudo/utils/persistent_store'
 
 RSpec.describe Qudo::Application do
-  STORE_CLASS = Qudo::Utils::PersistentStore
-  DEFAULT_CONTAINER = Qudo::Application::DEFAULT_CONTAINER
-
   subject { Class.new described_class }
+  let(:store_class) { Qudo::Utils::PersistentStore }
+  let(:default_container) { Qudo::Application::DEFAULT_CONTAINER }
 
   describe '.config' do
     it 'has persistent store for configuration' do
-      expect(subject.config).to be_a STORE_CLASS
+      expect(subject.config).to be_a store_class
     end
   end
 
   describe '.containers' do
     it 'has persistent store of containers' do
-      expect(subject.containers).to be_a STORE_CLASS
+      expect(subject.containers).to be_a store_class
     end
 
     it 'has default container' do
-      expect(subject.containers[DEFAULT_CONTAINER]).to be_a Qudo::Container
+      expect(subject.containers[default_container]).to be_a Qudo::Container
       expect(subject.container).to be_a Qudo::Container
-      expect(subject.container).to be subject.containers[DEFAULT_CONTAINER]
+      expect(subject.container).to be subject.containers[default_container]
     end
   end
 
@@ -46,6 +45,10 @@ RSpec.describe Qudo::Application do
         Class.new(described_class) do
           path app_path
         end
+      end
+
+      before(:each) do
+        allow(Qudo::Utils).to receive(:recursive_require)
       end
 
       it 'changes boot status after successfully booting' do
@@ -72,6 +75,10 @@ RSpec.describe Qudo::Application do
   describe '.boot!' do
     subject do
       Class.new(described_class) { path __dir__ }
+    end
+
+    before(:each) do
+      allow(Qudo::Utils).to receive(:recursive_require)
     end
 
     it 'raises LoadError for already loaded application' do
