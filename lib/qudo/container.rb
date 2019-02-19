@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require 'qudo/dependencies/dependencies_builder'
+require 'qudo/utils/class_loader'
 require 'qudo/utils/persistent_store'
 
 module Qudo
@@ -16,6 +17,10 @@ module Qudo
 
     def components
       @store.dup
+    end
+
+    def auto_register(path)
+      Utils::ClassLoader.load_map(path) { |*args| register(*args) }
     end
 
     # Save some component in the container store

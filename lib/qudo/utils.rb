@@ -13,7 +13,10 @@ module Qudo
       # @param [String,Pathname] path
       # @param [String] mask
       def recursive_require(path, mask = '/**/*.rb')
-        recursive_file_handling(path.to_s + mask) { |f| require f }
+        recursive_file_handling(path.to_s + mask) do |file|
+          require file
+          yield   file if block_given?
+        end
       end
     end
   end

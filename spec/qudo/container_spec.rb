@@ -117,4 +117,14 @@ RSpec.describe Qudo::Container do
       expect { subject.resolve! Faker::Lorem.word }.to raise_error KeyError
     end
   end
+
+  describe '#auto_register' do
+    it 'loads components by path and generates keys and instances of them' do
+      subject.auto_register RSpec.spec_path.join('samples', 'components', '**', '*.rb')
+
+      expect(subject.retrieve(:sample0)).to be_a Sample0
+      expect(subject.retrieve(:a_sample1)).to be_a A::Sample1
+      expect(subject.retrieve(:a_b_sample2)).to be_a A::B::Sample2
+    end
+  end
 end

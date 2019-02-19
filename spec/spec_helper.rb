@@ -3,8 +3,13 @@
 require 'bundler/setup'
 require 'qudo'
 require 'faker'
+require 'pathname'
 
 Bundler.require(:development, :test)
+
+def RSpec.spec_path
+  Pathname.new(__dir__)
+end
 
 RSpec.configure do |config|
   # Enable flags like --only-failures and --next-failure

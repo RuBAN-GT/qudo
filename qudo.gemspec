@@ -24,8 +24,9 @@ Gem::Specification.new do |spec|
   spec.required_ruby_version = '>= 2.3.0'
 
   # Main dependencies
-  spec.add_runtime_dependency 'hashie'
-  spec.add_runtime_dependency 'hooks'
+  spec.add_runtime_dependency 'dry-inflector', '~> 0.1.2'
+  spec.add_runtime_dependency 'hashie', '~> 3.6'
+  spec.add_runtime_dependency 'hooks', '~> 0.4'
 
   spec.add_development_dependency 'bundler', '>= 1.17'
 end
