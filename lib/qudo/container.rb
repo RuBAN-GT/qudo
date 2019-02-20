@@ -1,34 +1,66 @@
 # frozen_string_literal: true
 
-require 'qudo/dependencies/dependencies_builder'
+require 'qudo/component'
+require 'qudo/components/component_generator'
 require 'qudo/utils/class_loader'
 require 'qudo/utils/persistent_store'
 
 module Qudo
   # The simple register over components
+  #
+  # @attr_reader [Utils::PersistentStore] store with components
+  # @attr_reader [Utils::ClassLoader] class_loader for automatically loading components
+  # @attr_reader [Components::ComponentGenerator] component_generator for initialize instances of components
   class Container
-    def self.build_container_store(*args)
-      Utils::PersistentStore.new(*args)
+    attr_reader :store, :class_loader, :component_generator
+
+    # Initializer
+    #
+    # @param [Hash] options with external dependencies
+    #
+    # @option options [Utils::PersistentStore]         :container_store
+    # @option options [Utils::ClassLoader]             :class_loader
+    # @option options [Components::ComponentGenerator] :component_generator
+    def initialize(options = {})
+      container_store = options[:container_store] || Utils::PersistentStore
+      @store = container_store.new
+
+      @class_loader = options[:class_loader] || Utils::ClassLoader
+      @component_generator = options[:component_generator] || Components::ComponentGenerator
     end
 
-    def initialize
-      @store = self.class.build_container_store
-    end
-
+    # Safe components list
+    #
+    # @return [Utils::PersistentStore]
     def components
       @store.dup
     end
 
+    # Load components from specific path
+    #
+    # @example Load classes from components/cache/redis.rb
+    #   container.auto_register(
+    #     Pathname.new(__dir__).join('components', '**', '*.rb')
+    #   ) #=> { cache_redis: Cache::Redis }
+    #
+    # @param  [Pathname,String] path with a specification (mask) about sources
+    # @return [Hash<Symbol,Component>]
     def auto_register(path)
-      Utils::ClassLoader.load_map(path) { |*args| register(*args) }
+      class_loader.load_map(path) do |key, klass|
+        raise LoadError, 'Class must be inherits Component' unless klass < Component
+
+        register key, klass
+      end
     end
 
     # Save some component in the container store
     #
     # @param  [String,Symbol] name
+    # @param  [Component,Class<Component>] input
+    # @param  [Hash,Hashie] options for component options
     # @return [Qudo::Component]
-    def register(name, *args)
-      store[name] = handle_component(*args)
+    def register(name, input, options = {})
+      store[name] = component_generator.call input, options.merge(dependencies: store)
     end
     alias []= register
 
@@ -62,30 +94,5 @@ module Qudo
       resolve name
     end
     alias [] resolve!
-
-    private
-
-      attr_reader :store
-
-      def handle_component(component, options = {})
-        component.is_a?(Class) ? generate_new_component(component, options) : generate_injected_component(component)
-      end
-
-      def generate_new_component(component_klass, options = {})
-        check_dependencies_builder! component_klass
-        component_klass.new options.merge(dependencies: components)
-      end
-
-      def generate_injected_component(component)
-        check_dependencies_builder! component.class
-        component.inject_dependencies components unless component.dependencies_resolved?
-        component
-      end
-
-      def check_dependencies_builder!(subject)
-        unless subject.included_modules.include? Dependencies::DependenciesBuilder
-          raise ArgumentError, 'Component class must include DependenciesBuilder module'
-        end
-      end
   end
 end
