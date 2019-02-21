@@ -4,6 +4,11 @@ require 'hooks'
 
 module Qudo
   # The object factory for safe creation and utilization objects
+  #
+  # Supports a Hooks definition: %w[before_build after_build before_finalize after_finalize]
+  #
+  # @attr_reader [Array<*>] build_args with arguments for builder
+  # @attr_reader [*] target that returned from builder
   class ObjectFactory
     include Hooks
 
@@ -11,7 +16,7 @@ module Qudo
     define_hooks :before_build, :after_build, :before_finalize, :after_finalize
 
     class << self
-      # The main logic for component target initialization
+      # The building logic for a component target initialization
       #
       # @example some client initialization
       #   builder |*_|
@@ -52,7 +57,7 @@ module Qudo
       @built
     end
 
-    # Get target with building if it needed
+    # Get a target with calling of building process if it needed
     #
     # @return [*] from builder
     def resolve
@@ -63,11 +68,11 @@ module Qudo
     # @note For built target this method bind him to finalizer
     #
     # @return [*] from builder
-    # @raise [StandardError] when builder is undefined
-    # @raise [StandardError] when target is already built
+    # @raise [LoadError] when target is already built
+    # @raise [LoadError] when builder is undefined
     def build
-      raise 'The target already built' if built?
-      raise 'Undefined component builder' if self.class.builder.nil?
+      raise LoadError, 'The target already built' if built?
+      raise LoadError, 'Undefined component builder' if self.class.builder.nil?
 
       run_hook :before_build
       build_target
@@ -78,6 +83,8 @@ module Qudo
     end
 
     # Run destruction workflow for target
+    #
+    # @return [void]
     def finalize
       return unless built?
 

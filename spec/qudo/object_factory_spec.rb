@@ -8,69 +8,83 @@ RSpec.describe Qudo::ObjectFactory do
   end
 
   def full_factory
-    factory = child_factory
-    factory.builder { [Faker::Number.number] }
+    child_factory.tap do |f|
+      f.builder { [Faker::Number.number] }
+    end
+  end
 
-    factory
+  def factory_instance_with_target
+    target  = Faker::Number.number
+    factory = child_factory.tap do |f|
+      f.builder { target }
+      f.finalizer manual: true
+    end
+
+    [factory.new, target]
   end
 
   describe '#build' do
     it 'raises on undefined builder' do
       sample_factory_instance = child_factory.new
-      expect { sample_factory_instance.build }.to raise_error(/Undefined/)
+      expect { sample_factory_instance.build }.to raise_error LoadError
     end
 
-    it 'creates target on build process' do
-      sample_target  = Faker::Number.number
-      sample_factory = child_factory
-      sample_factory.builder { sample_target }
-      sample_factory.finalizer manual: true
+    it 'creates target after build process' do
+      factory_instance, target = factory_instance_with_target
 
-      sample_factory_instance = sample_factory.new
-
-      expect { sample_factory_instance.build }.not_to raise_error
-      expect(sample_factory_instance.target).to eq(sample_target)
+      expect { factory_instance.build }.not_to raise_error
+      expect(factory_instance.target).to eq(target)
     end
 
-    it 'sets flag built after successful building' do
-      sample_factory = full_factory
-      sample_factory_instance = sample_factory.new
-      sample_factory_instance.build
-
-      expect(sample_factory_instance.built?).to be_truthy
+    it 'sets flag built after successfully building' do
+      factory_instance = full_factory.new.tap(&:build)
+      expect(factory_instance.built?).to be_truthy
     end
 
-    it 'calls #handle_finalizer for target on build process' do
-      sample_factory = full_factory
-      sample_factory_instance = sample_factory.new
+    it 'calls related :before_build, :after_build hooks' do
+      factory_instance = full_factory.new
 
-      allow(sample_factory_instance).to receive(:handle_finalizer)
-      sample_factory_instance.build
-      expect(sample_factory_instance).to have_received(:handle_finalizer)
+      expect(factory_instance).to receive(:run_hook).with(:before_build)
+      expect(factory_instance).to receive(:run_hook).with(:after_build)
+      factory_instance.build
     end
   end
 
   describe '#finalize' do
-    it 'resets target manually on finalization process' do
-      sample_factory = full_factory
-      sample_factory_instance = sample_factory.new
-      sample_factory_instance.build
+    it 'resets value of built target' do
+      factory_instance = full_factory.new.tap(&:build)
 
-      expect { sample_factory_instance.finalize }.not_to raise_error
-      expect(sample_factory_instance.target).to be_nil
+      expect(factory_instance.target).not_to be_nil
+      expect { factory_instance.finalize }.not_to raise_error
+      expect(factory_instance.target).to be_nil
     end
 
-    it 'calls original finailizer on #finalize' do
-      dbl = double(destructor: nil)
-      expect(dbl).to receive(:destructor)
+    it 'calls finalizer with removed target' do
+      target  = [Faker::Number.number]
+      dbl     = double(destructor: nil)
+      factory = child_factory.tap do |f|
+        f.builder   { target }
+        f.finalizer { |*args| dbl.destructor(*args) }
+      end
 
-      sample_factory = full_factory
-      sample_factory.finalizer { |_| dbl.destructor }
+      expect(dbl).to receive(:destructor).with(target)
+      factory.new.tap(&:build).tap(&:finalize)
+    end
 
-      sample_factory_instance = sample_factory.new
-      sample_factory_instance.build
+    it 'doesnt start finalization for not built object' do
+      factory_instance = full_factory.new
 
-      expect { sample_factory_instance.finalize }.not_to raise_error
+      expect(factory_instance.built?).to be_falsey
+      expect(factory_instance).not_to receive(:reset_target)
+      expect { factory_instance.finalize }.not_to raise_error
+    end
+
+    it 'calls related :before_finalize, :after_finalize hooks' do
+      factory_instance = full_factory.new.tap(&:build)
+
+      expect(factory_instance).to receive(:run_hook).with(:before_finalize)
+      expect(factory_instance).to receive(:run_hook).with(:after_finalize)
+      factory_instance.finalize
     end
   end
 
@@ -87,15 +101,15 @@ RSpec.describe Qudo::ObjectFactory do
         expect(called).to eq(sample)
         rd.close
       else
-        sample_factory = full_factory
-        sample_factory.finalizer do |_|
-          wr.write sample
-          wr.close
+        factory = full_factory.tap do |f|
+          f.finalizer do |_|
+            wr.write sample
+            wr.close
+          end
         end
 
-        sample_factory_instance = sample_factory.new
-        sample_factory_instance.build
-        sample_factory_instance.instance_variable_set :@target, nil
+        factory_instance = factory.new.tap(&:build)
+        factory_instance.instance_variable_set :@target, nil
 
         GC.start
       end
@@ -103,25 +117,23 @@ RSpec.describe Qudo::ObjectFactory do
   end
 
   describe '#resolve' do
-    it 'creates new target if it is not built yet' do
-      sample_factory = full_factory
-      sample_factory_instance = sample_factory.new
+    it 'creates and returns a new target if it is not built yet' do
+      factory_instance, target = factory_instance_with_target
 
-      allow(sample_factory_instance).to receive(:build)
-      expect { sample_factory_instance.resolve }.not_to raise_error
-      expect(sample_factory_instance).to have_received(:build)
+      expect(factory_instance.built?).to be_falsey
+      expect(factory_instance.resolve).to be target
+      expect(factory_instance.built?).to be_truthy
     end
 
     it 'returns existed target if it exists' do
-      sample_factory = full_factory
-      sample_factory_instance = sample_factory.new
-      sample_factory_instance.build
+      factory_instance, target = factory_instance_with_target
+      factory_instance.build
 
-      allow(sample_factory_instance).to receive_messages(build: nil, target: nil)
-      expect { sample_factory_instance.resolve }.not_to raise_error
+      allow(factory_instance).to receive(:build)
 
-      expect(sample_factory_instance).not_to have_received(:build)
-      expect(sample_factory_instance).to have_received(:target)
+      expect(factory_instance.built?).to be_truthy
+      expect(factory_instance.resolve).to be target
+      expect(factory_instance).not_to have_received(:build)
     end
   end
 end
