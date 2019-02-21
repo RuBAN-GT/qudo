@@ -18,9 +18,7 @@ module Qudo
       end
 
       def self.validate_property!(name)
-        if instance_methods.include? name.to_sym
-          raise ArgumentError, "The property #{name} clashes with an existing method."
-        end
+        raise ArgumentError, "The property #{name} clashes with an existing method." if instance_methods.include? name.to_sym
       end
 
       def initialize(attributes = {}, &block)

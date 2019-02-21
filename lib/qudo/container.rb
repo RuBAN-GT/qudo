@@ -14,6 +14,20 @@ module Qudo
   class Container
     attr_reader :store, :class_loader, :component_generator
 
+    class << self
+      def default_store
+        Utils::PersistentStore
+      end
+
+      def default_class_loader
+        Utils::ClassLoader.new
+      end
+
+      def default_component_generator
+        Components::ComponentGenerator
+      end
+    end
+
     # Initializer
     #
     # @param [Hash] options with external dependencies
@@ -22,11 +36,10 @@ module Qudo
     # @option options [Utils::ClassLoader]             :class_loader
     # @option options [Components::ComponentGenerator] :component_generator
     def initialize(options = {})
-      container_store = options[:container_store] || Utils::PersistentStore
-      @store = container_store.new
+      @store = options.fetch(:container_store, self.class.default_store).new
 
-      @class_loader = options[:class_loader] || Utils::ClassLoader
-      @component_generator = options[:component_generator] || Components::ComponentGenerator
+      @class_loader        = options.fetch :class_loader, self.class.default_class_loader
+      @component_generator = options.fetch :component_generator, self.class.default_component_generator
     end
 
     # Safe components list
@@ -46,7 +59,7 @@ module Qudo
     # @param  [Pathname,String] path with a specification (mask) about sources
     # @return [Hash<Symbol,Component>]
     def auto_register(path)
-      class_loader.load_map(path) do |key, klass|
+      class_loader.call(path) do |key, klass|
         raise LoadError, 'Class must be inherits Component' unless klass < Component
 
         register key, klass

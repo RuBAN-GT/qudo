@@ -3,9 +3,9 @@
 require 'qudo/utils/class_loader'
 
 RSpec.describe Qudo::Utils::ClassLoader do
-  subject { described_class }
+  subject { described_class.new }
 
-  describe '.load_list' do
+  describe '#load_list' do
     it 'loads classes from path and returns their definitions' do
       entities = subject.load_list RSpec.spec_path.join('samples', 'components', '**', '*.rb')
 
@@ -14,7 +14,7 @@ RSpec.describe Qudo::Utils::ClassLoader do
     end
   end
 
-  describe '.load_map' do
+  describe '#load_map' do
     it 'loads classes and wrapped them into a hash' do
       entities = subject.load_map RSpec.spec_path.join('samples', 'components', '**', '*.rb')
 

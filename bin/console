@@ -3,9 +3,8 @@
 
 require 'bundler/setup'
 require 'pathname'
-require 'qudo'
-require 'qudo/utils'
+require 'qudo/utils/file_loader'
 
 Bundler.require(:default, :development)
-Qudo::Utils.recursive_require Pathname.new(__dir__).join('..', 'lib', 'qudo')
+Qudo::Utils::FileLoader.recursive_require Pathname.new(__dir__).join('..', 'lib', 'qudo')
 Pry.start

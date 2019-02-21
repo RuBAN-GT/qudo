@@ -4,7 +4,7 @@ require_relative './config'
 
 module Qudo
   module Utils
-    # A config generator over Hashie::Dash
+    # A config generator over Config
     module ConfigBuilder
       # The config structure and schema validator
       #

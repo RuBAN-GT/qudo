@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 require 'qudo/container'
-require 'qudo/utils'
+require 'qudo/utils/file_loader'
 require 'qudo/utils/persistent_store'
 
 module Qudo
@@ -58,7 +58,7 @@ module Qudo
         def require_internals
           raise LoadError, 'Application has undefined #path' if path.nil?
 
-          Utils.recursive_require path
+          Utils::FileLoader.recursive_require path
         end
 
         def finalize_booting

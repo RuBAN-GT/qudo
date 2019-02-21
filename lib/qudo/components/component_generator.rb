@@ -11,7 +11,7 @@ module Qudo
         # Save some component in the container store
         #
         # @param  [Qudo::Component,Class<Qudo::Component>] input
-        # @param  [Hash,Hashie] options for component options
+        # @param  [Hash] options for component options
         # @return [Qudo::Component]
         def call(input, options = {})
           if input.is_a?(Class)

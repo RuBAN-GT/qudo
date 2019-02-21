@@ -2,7 +2,7 @@
 
 require 'qudo/application'
 require 'qudo/container'
-require 'qudo/utils'
+require 'qudo/utils/file_loader'
 require 'qudo/utils/persistent_store'
 
 RSpec.describe Qudo::Application do
@@ -48,7 +48,7 @@ RSpec.describe Qudo::Application do
       end
 
       before(:each) do
-        allow(Qudo::Utils).to receive(:recursive_require)
+        allow(Qudo::Utils::FileLoader).to receive(:recursive_require)
       end
 
       it 'changes boot status after successfully booting' do
@@ -58,7 +58,7 @@ RSpec.describe Qudo::Application do
       end
 
       it 'requires internal rb files of application' do
-        expect(Qudo::Utils).to receive(:recursive_require) do |dir, mask|
+        expect(Qudo::Utils::FileLoader).to receive(:recursive_require) do |dir, mask|
           expect(dir.to_s).to eq application_path
           expect(mask).to be_nil
         end
@@ -78,7 +78,7 @@ RSpec.describe Qudo::Application do
     end
 
     before(:each) do
-      allow(Qudo::Utils).to receive(:recursive_require)
+      allow(Qudo::Utils::FileLoader).to receive(:recursive_require)
     end
 
     it 'raises LoadError for already loaded application' do
