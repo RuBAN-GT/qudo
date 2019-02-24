@@ -33,7 +33,7 @@ module Qudo
         loaded = []
         FileLoader.recursive_file_handling(path) do |file|
           require file
-          loaded << load_file(file, path)
+          loaded << load_class(file, path)
           yield loaded.last if block_given?
         end
 
@@ -61,7 +61,7 @@ module Qudo
 
       private
 
-        def load_file(file, root)
+        def load_class(file, root)
           class_path = extract_pure_name(file, root)
           Object.const_get inflector.classify(class_path)
         end
