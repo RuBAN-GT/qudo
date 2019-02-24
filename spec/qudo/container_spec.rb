@@ -9,7 +9,9 @@ RSpec.describe Qudo::Container do
   subject { described_class.new }
   let(:input_class) do
     Class.new Qudo::Component do
-      builder { Faker::RickAndMorty.character }
+      def self.builder(*_)
+        Faker::RickAndMorty.character
+      end
     end
   end
   let(:input_instance) { input_class.new }

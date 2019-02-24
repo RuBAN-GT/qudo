@@ -10,7 +10,7 @@ module RodaAppApi
         schema.property :resource, required: true
       end
 
-      builder do |config|
+      def self.builder(config, *_)
         require 'rest-client'
 
         RestClient::Resource.new config.resource

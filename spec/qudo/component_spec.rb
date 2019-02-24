@@ -4,7 +4,11 @@ require 'qudo/component'
 
 RSpec.describe Qudo::Component do
   subject do
-    Class.new(described_class) { builder { [Faker::Number.number] } }
+    Class.new(described_class) do
+      def self.builder(*_)
+        Faker::Number.number
+      end
+    end
   end
 
   def component_config

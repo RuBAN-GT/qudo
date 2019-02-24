@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require_relative './store'
+
 module Qudo
   module Utils
     # A secondary attributes definition
@@ -18,13 +20,16 @@ module Qudo
     #   instance = MyClass.new
     #   instance.my_prop #=> 42
     module Properties
+      # Definition of a hash for storing any properties
+      class PropertiesStore < Store; end
+
       # Class-level properties
       module ClassProperties
         # Get an original object with class properties
         #
-        # @return [Hash]
+        # @return [PropertiesStore]
         def properties
-          @properties ||= {}
+          @properties ||= PropertiesStore.new
         end
 
         # Set or get property
@@ -36,8 +41,15 @@ module Qudo
         # @example get a selected property
         #   property :some_prop #=> returns property value
         #
-        # @param  [Symbol,String] name
-        # @param  [*] value with a property value
+        # @overload property(name)
+        #   Get a property
+        #   @param [Symbol,String] name
+        #
+        # @overload property(name, value)
+        #   Set a property value
+        #   @param [Symbol,String] name
+        #   @param [*] value
+        #
         # @return [*] with value
         def property(name, *args)
           return resolve_property(name) if args.empty?

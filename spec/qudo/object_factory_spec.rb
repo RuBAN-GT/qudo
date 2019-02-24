@@ -8,28 +8,28 @@ RSpec.describe Qudo::ObjectFactory do
   end
 
   def full_factory
-    child_factory.tap do |f|
-      f.builder { [Faker::Number.number] }
+    Class.new described_class do
+      def self.builder(*_args)
+        Faker::Number.number
+      end
     end
   end
 
   def factory_instance_with_target
     target  = Faker::Number.number
-    factory = child_factory.tap do |f|
-      f.builder { target }
-      f.finalizer manual: true
+    factory = Class.new(described_class).tap do |f|
+      f.define_singleton_method(:builder) { target }
     end
 
     [factory.new, target]
   end
 
   describe '#build' do
-    it 'raises on undefined builder' do
-      sample_factory_instance = child_factory.new
-      expect { sample_factory_instance.build }.to raise_error LoadError
+    it 'raises NotImplementedError for unimplemented builder method' do
+      expect { child_factory.new.build }.to raise_error NotImplementedError
     end
 
-    it 'creates target after build process' do
+    it 'creates a target after building process' do
       factory_instance, target = factory_instance_with_target
 
       expect { factory_instance.build }.not_to raise_error
@@ -48,6 +48,22 @@ RSpec.describe Qudo::ObjectFactory do
       expect(factory_instance).to receive(:run_hook).with(:after_build)
       factory_instance.build
     end
+
+    it 'returns target for a built instance' do
+      factory = full_factory
+      factory_instance = factory.new
+
+      expect(factory).to receive(:builder).exactly(1).times
+      factory_instance.build
+      expect { factory_instance.build }.not_to raise_error
+    end
+  end
+
+  describe '#build!' do
+    it 'raises LoadError for built instance' do
+      factory_instance = full_factory.new.tap(&:build!)
+      expect { factory_instance.build! }.to raise_error LoadError
+    end
   end
 
   describe '#finalize' do
@@ -59,12 +75,12 @@ RSpec.describe Qudo::ObjectFactory do
       expect(factory_instance.target).to be_nil
     end
 
-    it 'calls finalizer with removed target' do
+    it 'calls #finalizer with removable target' do
       target  = [Faker::Number.number]
       dbl     = double(destructor: nil)
       factory = child_factory.tap do |f|
-        f.builder   { target }
-        f.finalizer { |*args| dbl.destructor(*args) }
+        f.define_singleton_method(:builder) { target }
+        f.define_singleton_method(:finalizer) { |*args| dbl.destructor(*args) }
       end
 
       expect(dbl).to receive(:destructor).with(target)
@@ -89,7 +105,7 @@ RSpec.describe Qudo::ObjectFactory do
   end
 
   describe '#bind_finalizer' do
-    it 'binds #finailize to a target in unmanual mode' do
+    it 'binds #finailize to a target with "auto_finalization" property' do
       sample = Faker::String.random
       rd, wr = IO.pipe
 
@@ -102,7 +118,8 @@ RSpec.describe Qudo::ObjectFactory do
         rd.close
       else
         factory = full_factory.tap do |f|
-          f.finalizer do |_|
+          f.property :auto_finalization, true
+          f.define_singleton_method(:finalizer) do |_|
             wr.write sample
             wr.close
           end
