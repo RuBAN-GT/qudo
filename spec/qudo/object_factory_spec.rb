@@ -9,7 +9,7 @@ RSpec.describe Qudo::ObjectFactory do
 
   def full_factory
     Class.new described_class do
-      def self.builder(*_args)
+      def self.builder(*_)
         Faker::Number.number
       end
     end
@@ -18,7 +18,7 @@ RSpec.describe Qudo::ObjectFactory do
   def factory_instance_with_target
     target  = Faker::Number.number
     factory = Class.new(described_class).tap do |f|
-      f.define_singleton_method(:builder) { target }
+      f.define_singleton_method(:builder) { |_| target }
     end
 
     [factory.new, target]
@@ -57,6 +57,17 @@ RSpec.describe Qudo::ObjectFactory do
       factory_instance.build
       expect { factory_instance.build }.not_to raise_error
     end
+
+    it 'passes a frozen hash to .builder from builder_opts' do
+      factory = full_factory
+      factory_instance = factory.new
+
+      expect(factory).to receive(:builder) do |opts|
+        expect(opts).to eq factory_instance.builder_opts
+        expect(opts.frozen?).to be_truthy
+      end
+      factory_instance.build
+    end
   end
 
   describe '#build!' do
@@ -79,7 +90,7 @@ RSpec.describe Qudo::ObjectFactory do
       target  = [Faker::Number.number]
       dbl     = double(destructor: nil)
       factory = child_factory.tap do |f|
-        f.define_singleton_method(:builder) { target }
+        f.define_singleton_method(:builder) { |_| target }
         f.define_singleton_method(:finalizer) { |*args| dbl.destructor(*args) }
       end
 
@@ -151,6 +162,13 @@ RSpec.describe Qudo::ObjectFactory do
       expect(factory_instance.built?).to be_truthy
       expect(factory_instance.resolve).to be target
       expect(factory_instance).not_to have_received(:build)
+    end
+  end
+
+  describe '#builder_opts' do
+    it 'returns store instance based on :builder_opts_store property' do
+      instance = described_class.new
+      expect(instance.builder_opts).to be_a described_class.property(:builder_opts_store)
     end
   end
 end

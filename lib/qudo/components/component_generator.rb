@@ -8,37 +8,38 @@ module Qudo
     # from other instances or classes
     module ComponentGenerator
       class << self
-        # Save some component in the container store
+        # Universal generation method for any inputs
         #
-        # @param  [Qudo::Component,Class<Qudo::Component>] input
-        # @param  [Hash] options for component options
+        # @overload call(input, dependencies)
+        #   Generate a component with injection from instance
+        #   @param [Qudo::Component] input
+        #   @param [Hash] dependencies
+        #
+        # @overload call(input, options)
+        #   Generate a component from class and options
+        #   @param [Class<Qudo::Component>] input
+        #   @param [Hash] options for initialization
+        #
         # @return [Qudo::Component]
-        def call(input, options = {})
-          if input.is_a?(Class)
-            generate_new_component(input, options)
-          else
-            dependencies = options.fetch(:dependencies, {})
-            generate_injected_component(input, dependencies)
-          end
+        def call(input, *args)
+          method = input.is_a?(Class) ? :generate_new_component : :generate_injected_component
+          send method, *args
         end
 
         def generate_new_component(component_klass, options = {})
-          check_dependencies_builder! component_klass
           component_klass.new options
         end
 
         def generate_injected_component(component, dependencies = {})
-          check_dependencies_builder! component.class
-          component.inject_dependencies dependencies unless component.dependencies_resolved?
-          component
+          component.tap do |c|
+            c.inject_dependencies dependencies if can_inject_dependencies?(c)
+          end
         end
 
         private
 
-          def check_dependencies_builder!(subject)
-            unless subject.included_modules.include? Qudo::Dependencies::DependenciesBuilder
-              raise ArgumentError, 'Component class must include DependenciesBuilder module'
-            end
+          def can_inject_dependencies?(subject)
+            subject.class.included_modules.include?(Qudo::Dependencies::DependenciesBuilder) && !subject.dependencies_resolved?
           end
       end
     end

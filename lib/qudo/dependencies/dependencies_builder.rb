@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
-require 'qudo/utils/store'
-require_relative './dependencies_resolver'
+require 'qudo/dependencies/dependencies_resolver'
 
 module Qudo
   module Dependencies
@@ -13,27 +12,32 @@ module Qudo
         #
         # @param  [Array<String,Symbol>] dependencies
         # @return [Array<String,Symbol>]
-        def dependencies(dependencies = [])
-          return @dependencies unless @dependencies.nil?
+        # @raise  [ArgumentError] when input is not Array
+        def dependencies(dependencies = nil)
+          return @dependencies if dependencies.nil?
+          raise ArgumentError, 'Dependencies must be string/symbol array' unless dependencies.is_a? Array
 
-          @dependencies = dependencies
+          @dependencies = dependencies.clone
         end
 
         # Build dependencies from injectable argument
         #
         # @param  [Hash] manager
-        # @return [Hashie::Mash]
+        # @return [DependenciesStore]
         def build_dependencies(manager)
           DependenciesResolver.resolve manager, dependencies
         end
 
         def build_dependencies_store(*args)
-          Utils::Store.new(*args).freeze
+          DependenciesStore.new(*args).freeze
         end
       end
 
       def self.included(base)
         base.extend(BuilderModule)
+        def base.inherited(children)
+          children.dependencies dependencies
+        end
       end
 
       attr_reader :resolved_dependencies
@@ -45,10 +49,10 @@ module Qudo
       # Override dependencies for a object
       #
       # @param  [Hash] dependencies
-      # @return [Utils::Store]
+      # @return [DependenciesStore]
       # @raise  [ArgumentError] when a object has resolved dependencies
       def inject_dependencies(dependencies)
-        raise ArgumentError, "Can't inject for resolved dependencies" if dependencies_resolved?
+        raise ArgumentError, "Can't inject for a object with resolved dependencies" if dependencies_resolved?
 
         @dependencies = self.class.build_dependencies_store dependencies
       end
@@ -62,7 +66,7 @@ module Qudo
         @resolved_dependencies = self.class.build_dependencies(dependencies)
       end
 
-      # The state of dependencies
+      # A state of dependencies
       #
       # @return [Boolean]
       def dependencies_resolved?

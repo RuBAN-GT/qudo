@@ -1,19 +1,26 @@
 # frozen_string_literal: true
 
-require 'qudo/utils/store'
+require 'qudo/dependencies/dependencies_store'
 
 module Qudo
   module Dependencies
     # Special resolver for different sources
     module DependenciesResolver
       class << self
+        # Generate a dependencies register
+        #
+        # @return [DependenciesStore]
+        def build_dependencies_store
+          DependenciesStore.new
+        end
+
         # Load required dependencies from selected register
         #
         # @param  [Hash] dependencies
         # @param  [Array<String,Symbol>] requirements
-        # @return [Qudo::Utils::Store]
+        # @return [DependenciesStore]
         def retrieve(dependencies, requirements = [])
-          requirements.each_with_object(Utils::Store.new) do |requirement, total|
+          requirements.each_with_object(build_dependencies_store) do |requirement, total|
             total[requirement] = retrieve_dependency(dependencies, requirement)
           end.freeze
         end
@@ -24,7 +31,7 @@ module Qudo
         # @param  [String,Symbol] key
         # @return [*]
         def retrieve_dependency(dependencies, key)
-          raise ArgumentError, "dependency #{key} is not found" unless dependencies.key?(key)
+          raise ArgumentError, "Dependency #{key} is not found" unless dependencies.key?(key)
 
           dependencies[key]
         end
@@ -33,10 +40,10 @@ module Qudo
         #
         # @param  [Hashie::Mash] dependencies
         # @param  [Array<String,Symbol>] requirements
-        # @return [Qudo::Utils::Store]
+        # @return [DependenciesStore]
         def resolve(dependencies, requirements = [])
           retrieved = retrieve(dependencies, requirements)
-          retrieved.each_with_object(Utils::Store.new) do |(k, v), total|
+          retrieved.each_with_object(build_dependencies_store) do |(k, v), total|
             total[k] = resolve_dependency v
           end.freeze
         end

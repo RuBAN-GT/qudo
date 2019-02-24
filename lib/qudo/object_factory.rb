@@ -2,6 +2,7 @@
 
 require 'hooks'
 require 'qudo/utils/properties'
+require 'qudo/utils/store'
 
 module Qudo
   # The object factory for safe creation and utilization objects
@@ -9,34 +10,40 @@ module Qudo
   # Supports a Hooks definition: %i[before_build after_build before_finalize after_finalize]
   # @see https://github.com/apotonick/hooks
   #
-  # @attr_reader [Array<*>] build_args with arguments for builder
   # @attr_reader [*] target that returned from builder
   class ObjectFactory
     include Hooks
     include Utils::Properties
 
-    attr_reader  :build_args, :target
+    attr_reader  :target
     define_hooks :before_build, :after_build, :before_finalize, :after_finalize
 
     # A flag that controls of automatic binding finalizer to a garbage collector
     property :auto_finalization, false
 
+    # Definition of a builder options store
+    property :builder_opts_store, Utils::Store
+
     class << self
       # A building logic for a component target initialization
       #
       # @abstract
-      # @example some client initialization
-      #   def builder
-      #     DbClient.new
+      # @example Some client initialization
+      #   def builder(builder_opts)
+      #     DbClient.new builder_opts.config
       #   end
-      def builder(*_args)
+      #
+      # @param [Utils::Store] _options
+      def builder(_options)
         raise NotImplementedError
       end
 
       # The logic for utilisation of a target
       #
       # @abstract
-      # @example closing connection before destroying object
+      # @example Closing connection before destroying object
+      #   property :auto_finalization, true
+      #
       #   def finalizer(target)
       #     target.close!
       #   end
@@ -45,6 +52,16 @@ module Qudo
       def finalizer(_target); end
     end
 
+    # Options for .builder
+    #
+    # @return [Qudo::Utils::Store]
+    def builder_opts
+      @builder_opts ||= generate_builder_opts
+    end
+
+    # A factory already built a target
+    #
+    # @return [Boolean]
     def built?
       @built
     end
@@ -105,18 +122,20 @@ module Qudo
         return unless properties.auto_finalization?
 
         ObjectSpace.define_finalizer(target) { finalize }
-      rescue StandardError
-        raise 'Cannot use finalizer for the target'
       end
 
       def build_target
         @built  = true
-        @target = self.class.builder(*build_args)
+        @target = self.class.builder(builder_opts.freeze)
       end
 
       def finalize_target
         self.class.finalizer target
         reset_target
+      end
+
+      def generate_builder_opts
+        properties.builder_opts_store.new
       end
 
       def reset_target
