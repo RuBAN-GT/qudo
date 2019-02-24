@@ -34,11 +34,11 @@ module Qudo
 
         # Set or get property
         #
-        # @example set a property
+        # @example Set a property
         #   property :scalar_prop, 42 #=> 42
         #   property :proc_prop, { 42 } #=> Proc, will be resolved on getting request
         #
-        # @example get a selected property
+        # @example Get a selected property
         #   property :some_prop #=> returns property value
         #
         # @overload property(name)
@@ -69,15 +69,25 @@ module Qudo
           def register_property(name, value)
             properties[name.to_sym] = value
           end
+
+        protected
+
+          def properties=(store)
+            @properties = store
+          end
       end
 
       def self.included(base)
         base.extend ClassProperties
+        def base.inherited(children)
+          super children
+          children.properties = PropertiesStore.new(self.properties)
+        end
       end
 
       # Get freeze properties for instance usage
       #
-      # @return [Hash]
+      # @return [PropertiesStore]
       def properties
         @properties ||= self.class.properties.dup.freeze
       end

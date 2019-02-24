@@ -65,6 +65,20 @@ RSpec.describe Qudo::Utils::Properties do
     it 'returns non frozen properties' do
       expect(subject.properties.frozen?).to be_falsey
     end
+
+    it 'saves values for inherited class' do
+      described_module = described_class
+
+      parent_class = Class.new do
+        include described_module
+
+        property :parent_key, Faker::Number.number
+      end
+      child_class = Class.new parent_class
+
+      expect(child_class.properties).to include parent_class.properties
+      expect(child_class.properties).not_to be parent_class.properties
+    end
   end
 
   describe '#initialize' do
