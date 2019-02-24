@@ -10,6 +10,7 @@ gemspec
 # Local dependencies
 gem 'rake', '~> 10.0'
 gem 'rubocop', require: false
+gem 'yard', require: false
 
 group :development, :test do
   gem 'faker', '~> 1.9'
