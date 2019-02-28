@@ -2,12 +2,9 @@
 
 require 'qudo/application'
 
-module RodaAppApi
+module Api
   class Application < Qudo::Application
     path Pathname.new(__dir__)
-
-    config.resource = 'https://ghibliapi.herokuapp.com'
-    container.auto_register path.join('components', '**/*.rb'), config
 
     def self.run
       boot!
